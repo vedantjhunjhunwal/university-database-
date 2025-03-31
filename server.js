@@ -5,14 +5,33 @@ const oracledb = require('oracledb');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
+const cors = require('cors');
 // Oracle XE 11.2 configuration (minimal change)
+try {
+    oracledb.initOracleClient({
+      libDir: 'C:\\oraclexe\\app\\oracle\\product\\11.2.0\\server\\bin' // Path to your Oracle XE binaries
+    });
+  } catch (err) {
+    console.error('Oracle client initialization error:', err);
+    process.exit(1);
+  }
 const dbConfig = {
     user: 'system', // Default admin user for XE
-    password: 'your_password', // Password you set during XE installation
+    password: '$Vedant08$', // Password you set during XE installation
     connectString: 'localhost:1521/XE' // Only changed to 'XE' instead of 'ORCL'
 };
-
+const devCors = {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+  };
+  const prodCors = {
+    origin: 'https://your-frontend.vercel.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+    optionsSuccessStatus: 200 // For legacy browser support
+  };
+  
 // Middleware (unchanged)
 app.use(bodyParser.json());
 app.use(express.static('public'));
@@ -240,3 +259,4 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
     console.log('Using Oracle Database 11g XE');
 });
+app.use(cors(process.env.NODE_ENV === 'production' ? prodCors : devCors));
